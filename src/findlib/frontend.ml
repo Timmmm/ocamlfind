@@ -7,7 +7,7 @@ open Findlib;;
 
 exception Usage;;
 exception Silent_error;;
-  
+
 type mode =
     M_use | M_query | M_install | M_remove | M_compiler of string | M_dep
   | M_printconf | M_list | M_browser | M_call of (string*string)
@@ -51,7 +51,7 @@ let out_path ?(prefix="") s =
   match Findlib_config.system with
     | "mingw" | "mingw64" | "cygwin" ->
 	let u = slashify s in
-	prefix ^ 
+	prefix ^
 	  (if String.contains u ' ' then
 	     (* Desperate attempt to fix the space problem in paths.
                 Note that we invoke commands via Unix.open_process, and
@@ -104,7 +104,7 @@ let percent_subst ?base spec lookup s =
     failwith "bad format string" in
 
   let parenthesized_name j =
-    try		  
+    try
       if j+1>=l then raise Not_found;
       let k = String.index_from s (j+1) ')' in
       let name = String.sub s (j+1) (k-j-1) in
@@ -120,7 +120,7 @@ let percent_subst ?base spec lookup s =
 	    let prev = Const(String.sub s i (j-i)) in
 	    let c = s.[j+1] in
 	    match c with
-		'%' -> 
+		'%' ->
 		  prev :: Const "%" :: preprocess (j+2) (j+2)
 	      | '(' ->
                   let name, j_next = parenthesized_name (j+1) in
@@ -389,7 +389,7 @@ let run_command ?filter verbose cmd args =
 
     let fixed_cmd =
       if need_exe then (
-        if Filename.check_suffix cmd ".exe" then cmd else cmd ^ ".exe" 
+        if Filename.check_suffix cmd ".exe" then cmd else cmd ^ ".exe"
       )
       else
         cmd in
@@ -478,7 +478,7 @@ let process_pp_spec syntax_preds packages pp_opts =
    *
    * 2. Add their requirements = [pp_packages]
    *
-   * Because the packages are now mixed, we must evaluate for 
+   * Because the packages are now mixed, we must evaluate for
    * [syntax_preds] + "byte".
    *)
 
@@ -510,7 +510,7 @@ let process_pp_spec syntax_preds packages pp_opts =
 	| [_, cmd] -> Some cmd
 	| _ ->
 	    failwith("Several packages are selected that specify \
-                      preprocessors: " ^ 
+                      preprocessors: " ^
 		       String.concat ", "
 		      (List.map
 			 (fun (n,v) ->
@@ -538,7 +538,7 @@ let process_pp_spec syntax_preds packages pp_opts =
       List.flatten
 	(List.map
 	   (fun pkg ->
-	      let al = 
+	      let al =
 		try package_property ("byte" :: syntax_preds) pkg "archive"
 	        with Not_found -> "" in
 	      Fl_split.in_words al
@@ -643,9 +643,9 @@ let merge_native_arguments native_spec f_unit f_string f_special_list =
 	   List.assoc switch_name f_special_list
 	 with
 	     Not_found ->
-	       if switch_has_arg then 
-		 f_string switch_name 
-	       else 
+	       if switch_has_arg then
+		 f_string switch_name
+	       else
 		 f_unit switch_name in
        (switch_name, f, help_text)
     )
@@ -654,7 +654,7 @@ let merge_native_arguments native_spec f_unit f_string f_special_list =
 
 
 let parse_args
-      ?(current = Arg.current) ?(args = Sys.argv) 
+      ?(current = Arg.current) ?(args = Sys.argv)
       ?(align = true)
       spec anon usage =
   try
@@ -670,7 +670,7 @@ let parse_args
         exit 0
     | Arg.Bad text ->
         prerr_string text;
-        exit 2  
+        exit 2
 
 
 (************************* format expansion *************************)
@@ -779,7 +779,7 @@ let query_package () =
   let pp = ref false in
   let qe = ref false in
   let qo = ref false in
-  
+
   let packages = ref [] in
 
   let append_predicate s =
@@ -899,7 +899,7 @@ let contracted_ocamlmklib_options =
 let ocamlc which () =
 
   (* let destdir = ref (default_location()) in *)
-  
+
   let switches = ref [] in
   let pass_options = ref [] in
   let pass_files = ref [] in
@@ -941,7 +941,7 @@ let ocamlc which () =
                 pass_options := !pass_options @ [name]) in
   let add_spec_fn name s =
     pass_options := !pass_options @ [name; s] in
-  let add_spec name = 
+  let add_spec name =
     Arg.String (add_spec_fn name) in
   let add_contracted_spec_fn name s =
     pass_options := !pass_options @ [name ^ s] in
@@ -1006,38 +1006,38 @@ let ocamlc which () =
             "         Only show the constructed command, but do not exec it\nSTANDARD OPTIONS:";
         ];
 
-        merge_native_arguments 
-	  native_spec 
+        merge_native_arguments
+	  native_spec
 	  add_switch
 	  add_spec
           (
-	    [ "-cclib", 
+	    [ "-cclib",
 	      Arg.String (fun s -> pass_files := !pass_files @ [ Cclib s ]);
-              
+
 	      "-I", (Arg.String
 		       (fun s ->
 		          let s = resolve_path s in
                           if Sys.file_exists s then incpath := s :: !incpath;  (* reverted below *)
 		          add_spec_fn "-I" (slashify s) ));
-              
-	      "-impl", 
+
+	      "-impl",
 	      Arg.String (fun s -> pass_files := !pass_files @ [ Impl(slashify s) ]);
-              
-	      "-intf", 
+
+	      "-intf",
 	      Arg.String (fun s -> pass_files := !pass_files @ [ Intf(slashify s) ]);
-              
-	      "-pp", 
+
+	      "-pp",
 	      Arg.String (fun s -> pp_specified := true; add_spec_fn "-pp" s);
-	      
-	      "-thread", 
+
+	      "-thread",
               Arg.Unit (fun _ -> support_threads(); threads := threads_default);
-            
-	      "-vmthread", 
+
+	      "-vmthread",
               Arg.Unit (fun _ -> support_threads(); threads := `VM_threads);
-              
-	      "-", 
+
+	      "-",
 	      Arg.String (fun s -> pass_files := !pass_files @  [ Pass s ]);
-              
+
 	    ] @
             if which = "ocamlmklib" then
               List.map
@@ -1076,7 +1076,7 @@ let ocamlc which () =
     ("usage: ocamlfind " ^ which ^ " [options] file ...");
 
   (* ---- Start requirements analysis ---- *)
-  
+
   begin match which with
     "ocamlc"     -> predicates := "byte" :: !predicates;
   | "ocamlcp"    -> predicates := "byte" :: !predicates;
@@ -1118,7 +1118,7 @@ let ocamlc which () =
     syntax_preds := "preprocessor" :: "syntax" :: !syntax_preds;
   end;
 
-  let verbose = 
+  let verbose =
     if List.mem "-verbose" !switches then Verbose else
       if !only_show then Only_show else
         Normal in
@@ -1379,7 +1379,7 @@ let ocamlc which () =
 
   let dll_dirs =
     remove_dups
-      ((List.map package_directory !dll_pkgs) @ 
+      ((List.map package_directory !dll_pkgs) @
        (if !dll_pkgs_all then eff_link_dl else [])) in
 
   let dll_options =
@@ -1444,10 +1444,10 @@ let ocamldoc() =
     ~align:false
     ( Arg.align
         [ "-package",
-	  Arg.String (fun s -> 
+	  Arg.String (fun s ->
 		        packages := !packages @ Fl_split.in_words s),
 	  "<name>  Add this package to the search path";
-          
+
 	  "-predicates",
 	  Arg.String (fun s ->
 		        predicates := !predicates @ Fl_split.in_words s),
@@ -1465,19 +1465,19 @@ let ocamldoc() =
           "-ppxopt",
           Arg.String (fun s -> ppx_opts := !ppx_opts @ [s]),
           "<pkg>,<opts>  Append options <opts> to ppx invocation for package <pkg>";
- 
+
 	  "-thread",
 	  Arg.Unit (fun () -> predicates := "mt" :: "mt_posix" :: !predicates),
 	  "  Assume kernel multi-threading when doing dependency analyses";
-          
+
 	  "-vmthread",
 	  Arg.Unit (fun () -> predicates := "mt" :: "mt_vm" :: !predicates),
 	  "  Assume bytecode multi-threading when doing dependency analyses";
-          
+
           "-passopt",
           Arg.String (fun s -> options := !options @ [s]),
           "<opt>  Pass this option directly to ocamldoc";
-          
+
           "-passrest",
           Arg.Rest (fun s -> options := !options @ [s]),
           "  Pass all remaining options directly to ocamldoc";
@@ -1485,7 +1485,7 @@ let ocamldoc() =
           "-only-show",
           Arg.Unit (fun () -> verbose := Only_show),
           "  Only show the constructed command but do not exec it";
-          
+
 	  "-verbose",
 	  Arg.Unit (fun () -> verbose := Verbose),
 	  "  Be verbose\nSTANDARD OPTIONS:";
@@ -1493,7 +1493,7 @@ let ocamldoc() =
       @
       ( merge_native_arguments
 	  native_spec
-	  (fun s -> 
+	  (fun s ->
 	     Arg.Unit (fun () ->
 			 options := !options @ [s]))
 	  (fun s ->
@@ -1668,7 +1668,7 @@ let ocamldep () =
 	                 "  Output only dependencies for bytecode";
         "-only-show",  Arg.Unit (fun () -> verbose := Only_show),
                    "        Only show the constructed command but do not exec it";
-          
+
 	"-verbose", Arg.Unit (fun () -> verbose := Verbose),
 	         "          Print calls to external commands\nSTANDARD OPTIONS:";
       ]
@@ -1850,6 +1850,8 @@ let copy_file ?(rename = (fun name -> name)) ?(append = "") src dstdir =
 
 
 let install_create_directory pkgname dstdir =
+  prerr_endline ("OCAMLFIND install_creat_directory: dstdir is: " ^ dstdir);
+
   try
     Unix.mkdir dstdir 0o777
   with
@@ -1931,7 +1933,7 @@ let rec patch_archives pkgdir pkg =
 	   let files = Fl_split.in_words def.Fl_metascanner.def_value in
 	   let files' =
 	     List.filter
-	       (fun file -> 
+	       (fun file ->
 		  let p = Findlib.resolve_path ~base:pkgdir file in
 		  Sys.file_exists p)
 	       files in
@@ -1951,7 +1953,7 @@ let rec patch_archives pkgdir pkg =
       )
       defs' in
   (* Return the package or raise Not_found if all archives vanished: *)
-  let children = 
+  let children =
     (* Recursive patch, remove all Not_found packages: *)
     List.flatten
       (List.map
@@ -1979,7 +1981,7 @@ let rec patch_pkg pkgdir pkg patches =
 	  { Fl_metascanner.def_var = "version";
 	    def_flav = `BaseDef;
 	    def_preds = [];
-	    def_value = v 
+	    def_value = v
 	  } in
 	let defs =
 	  List.filter
@@ -2001,8 +2003,8 @@ let rec patch_pkg pkgdir pkg patches =
 	  } in
 	patch_pkg pkgdir pkg' patches'
     | `Archives :: patches' ->
-	let pkg' = 
-	  try patch_archives pkgdir pkg 
+	let pkg' =
+	  try patch_archives pkgdir pkg
 	  with
 	      Missing_archives p -> p in
 	patch_pkg pkgdir pkg' patches'
@@ -2097,11 +2099,16 @@ let install_package () =
 		 | No_dll -> nodll_files := s :: !nodll_files
 	)
 	errmsg;
+
+  prerr_endline ("OCAMLFIND install: destdir is: " ^ !destdir);
+
   if !pkgname = "" then (Arg.usage keywords errmsg; exit 1);
   if not (Fl_split.is_valid_package_name !pkgname) then
     failwith "Package names must not contain the character '.'!";
 
   let pkgdir = Filename.concat !destdir !pkgname in
+  prerr_endline ("OCAMLFIND install: pkgdir is: " ^ pkgdir);
+
   let dlldir = Filename.concat !destdir Findlib_config.libexec_name in
   let has_metadir = !metadir <> "" in
   let meta_dot_pkg = "META." ^ !pkgname in
@@ -2124,7 +2131,7 @@ let install_package () =
 	    not has_metadir ||
 	      (f <> "META" && f <> meta_dot_pkg))
 	 pkgdir_list) in
-  
+
   (* Check whether META exists: (And check syntax) *)
   let meta_name =
     try
@@ -2186,7 +2193,7 @@ let install_package () =
        try
 	 copy_file
 	   ~rename: (fun f ->
-			 if f = "META" || f = meta_dot_pkg then 
+			 if f = "META" || f = meta_dot_pkg then
 			   raise Skip_file
 			 else
 			   f)
@@ -2221,8 +2228,8 @@ let install_package () =
 
   if dll_list <> [] && have_libexec && !ldconf <> "ignore" then begin
     (* Check whether libexec is mentioned in ldconf *)
-    (* FIXME: We have to be careful with case-insensitive filesystems. 
-       Currently, we only check for Win32, but also OS X may have ci 
+    (* FIXME: We have to be careful with case-insensitive filesystems.
+       Currently, we only check for Win32, but also OS X may have ci
        filesystems. So some better check would be nice.
      *)
     let lines = read_ldconf !ldconf in
@@ -2231,7 +2238,7 @@ let install_package () =
     let ci_filesys = (Sys.os_type = "Win32") in
     let check_dir d =
       let d' = Fl_split.norm_dir d in
-      (d' = dlldir_norm) || 
+      (d' = dlldir_norm) ||
         (ci_filesys && string_lowercase_ascii d' = dlldir_norm_lc) in
     if not (List.exists check_dir lines) then
       prerr_endline("ocamlfind: [WARNING] You have installed DLLs but the directory " ^ dlldir_norm ^ " is not mentioned in ld.conf");
@@ -2241,10 +2248,10 @@ let install_package () =
   let write_meta append_directory dir name =
     (* If there are patches, write the patched META, else copy the file: *)
     if !patches = [] then
-      copy_file 
+      copy_file
 	~rename:(fun _ -> name)
         ?append:(if append_directory then
-		   Some("\ndirectory=\"" ^ pkgdir ^ 
+		   Some("\ndirectory=\"" ^ pkgdir ^
 			  "\" # auto-added by ocamlfind\n")
 		 else
 		   None)
@@ -2256,7 +2263,7 @@ let install_package () =
       let out = open_out p in
         Fl_metascanner.print out patched_pkg;
       if append_directory then
-	output_string out ("\ndirectory=\"" ^ pkgdir ^ 
+	output_string out ("\ndirectory=\"" ^ pkgdir ^
 			     "\" # auto-added by ocamlfind\n");
       close_out out;
       prerr_endline ("Installed " ^ p);
@@ -2488,7 +2495,7 @@ let print_configuration() =
     | Some "metapath" ->
         let mdir = Findlib.meta_directory() in
         let ddir = Findlib.default_location() in
-	print_endline 
+	print_endline
           (if mdir <> "" then mdir ^ "/META.%s" else ddir ^ "/%s/META")
     | Some "stdlib" ->
 	print_endline (Findlib.ocaml_stdlib())
@@ -2609,6 +2616,10 @@ let rec select_mode () =
 
 
 let main() =
+
+  prerr_endline "OCAMLFIND: argv is [";
+  Array.iter prerr_endline Sys.argv;
+  prerr_endline "]";
   try
     let m = select_mode() in
     let l = Array.length Sys.argv in
